@@ -38,7 +38,7 @@ the following statistical maps:
 
 Analysis software:
 
-spatial_scales_codes.zip - our full analysis codes used to identify brain activity related to spatial representation at different scales. 
+Our full analysis codes, used to identify brain activity related to spatial representation at different scales, are provided here. 
 These scripts use Matlab (tested on Matlab 2017B), BrainVoyager (tested on BrainVoyager 20.6) and Neuroelf (tested on NeuroElf v1.1).
 The zip file contains the following scripts: 
 - 1_Preprocessing_pipeline.m - pre-processing pipeline for the fMRI data using BrainVoyager and NeuroElf.

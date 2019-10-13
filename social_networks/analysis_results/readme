@@ -1,2 +1,20 @@
 This folder contains the group RSA results from the analysis.
-Files are:
+The files correspond to the following dissimilarity matrices:
+
+Main analysis - full dissimilarity matrices:
+group_analysis_RSA_searchlight_facebook_percentcommonfriends_radius3_iters10000.nii - social network distance (calculated by proportion of mutual friends)
+group_analysis_RSA_searchlight_self_proximity_radius3_iters10000.nii - similarity in personal affiliation responses
+group_analysis_RSA_searchlight_personality_radius3_iters10000.nii - similarity in personality traits responses
+group_analysis_RSA_searchlight_appearance_radius3_iters10000.nii - similarity in appearance responses
+
+The same as the main analysis, but with regression of the other three matrices from each matrix, to obtain independent contribution of each:
+group_analysis_RSA_searchlight_facebook_percentcommonfriends_radius3_othermats_regressed_percent_iters10000.nii
+group_analysis_RSA_searchlight_self_proximity_radius3_othermats_regressed_percent_iters10000.nii
+group_analysis_RSA_searchlight_personality_radius3_othermats_regressed_percent_iters10000.nii
+group_analysis_RSA_searchlight_appearance_radius3_othermats_regressed_percent_iters10000.nii
+
+Alternative social network distance measures:
+group_analysis_RSA_searchlight_facebook_distance_directconnections_RDM_radius3_iters10000.nii - social network distance by existence of direct connection between individuals
+group_analysis_RSA_searchlight_facebook_distance_numcommonfriends_RDM_radius3_iters10000.nii - social network distance by total number of mutual friends
+group_analysis_RSA_searchlight_facebook_distance_shortestpath_RDM_radius3_iters10000.nii - social network distance by shortest graph path length
+group_analysis_RSA_searchlight_facebook_distance_communicability_RDM_radius3_iters10000.nii - social network distance by communicability

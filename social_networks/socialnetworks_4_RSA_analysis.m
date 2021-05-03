@@ -250,4 +250,44 @@ end
 
 
 
+%% Getting average correlation values and winner map
+for i = 1:length(RSA_filenames)
+    RSA_filename = RSA_filenames{i};
+    
+    % Reading the RSA analysis results files from all subjects
+    all_RSA_results = [];
+    for s = 1:length(subject_names)
+        subj = subject_names(s).name;
+        current_subject_results_dir = fullfile(all_subjects_analysis_results_dir, subj);
+        RSA_result_file = dir(fullfile(current_subject_results_dir, RSA_filename));
+        % Converting to CosmoMVPA dataset format
+        if ~isempty(RSA_result_file)
+            all_RSA_results(:,:,:,s) = spm_read_vols(spm_vol(fullfile(current_subject_results_dir, RSA_result_file(1).name)));
+        end
+    end
+    
+    average_RSA_corr_map = nanmean(all_RSA_results, 4);
+    save_mat_to_nifti(fullfile(current_subject_results_dir, RSA_result_file(1).name), average_RSA_corr_map, fullfile(all_subjects_analysis_results_dir, ['meancorr_', RSA_filename]));
+end
 
+% Winner map
+RSA_filenames_new = {'RSA_searchlight_facebook_distance_percentcommonfriends_RDM_radius3.nii',...       % Social distance by proportion of common friends
+    'RSA_searchlight_responses_self_proximity_RDM_radius3.nii',...                                  % Dissimilarity in responses to personal affiliation questions
+    'RSA_searchlight_responses_personality_RDM_radius3.nii',...                                     % Dissimilarity in responses to personality traits questions
+    'RSA_searchlight_responses_appearance_RDM_radius3.nii',...                                      % Dissimilarity in responses to appearance questions
+    };
+all_RSAs_new = [];
+for i=1:length(RSA_filenames_new)
+    all_RSAs_new(:,:,:,i) = spm_read_vols(spm_vol(fullfile(all_subjects_analysis_results_dir, ['meancorr_', RSA_filenames_new{i}])));
+end
+threshold_temp = 0.06;
+s = size(all_RSAs_new);
+all_RSAs_new = reshape(all_RSAs_new, [s(1)*s(2)*s(3),s(4)]);
+[winner_map_temp_value,winner_map_temp] = max(all_RSAs_new');
+winner_map_temp_value = reshape(winner_map_temp_value', [s(1),s(2),s(3)]);
+winner_map_temp = reshape(winner_map_temp', [s(1),s(2),s(3)]);
+winner_map_temp(winner_map_temp_value<threshold_temp) = 0;
+save_mat_to_nifti(fullfile(all_subjects_analysis_results_dir, ['meancorr_', RSA_filenames_new{i}]), winner_map_temp, fullfile(all_subjects_analysis_results_dir,'winner_map_RSA_meancorr.nii'));
+for i=1:s(4)
+    save_mat_to_nifti(fullfile(all_subjects_analysis_results_dir, ['meancorr_', RSA_filenames_new{i}]), (winner_map_temp == i), fullfile(all_subjects_analysis_results_dir,['winner_map_RSA_meancorr_',num2str(i),'.nii']));
+end

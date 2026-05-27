@@ -76,15 +76,16 @@ def merge_all_dfs(df_clients, df_games, df_medical):
     return merged
 
 
-def main():
-    input_file = 'ShomeroshTables.xlsx'
+def main(input_file='ShomeroshTables.xlsx', output_dir='.'):
+    os.makedirs(output_dir, exist_ok=True)
     clients, games, medical = load_data(input_file)
 
     clients = filter_clients(clients)
     medical = medical_preprocessing(medical)
     merged_df = merge_all_dfs(clients, games, medical)
 
-    with open('merged_data.pkl', 'wb') as f:
+    out_path = os.path.join(output_dir, 'merged_data.pkl')
+    with open(out_path, 'wb') as f:
         pickle.dump(merged_df, f)
 
     print(f"Saved merged_data.pkl — {merged_df['userID'].nunique()} unique users")
@@ -92,4 +93,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description='Preprocess raw Shomerosh data')
+    parser.add_argument('--input', default='ShomeroshTables.xlsx',
+                        help='Path to raw Excel export')
+    parser.add_argument('--output-dir', default='.',
+                        help='Directory for output files')
+    args = parser.parse_args()
+    main(args.input, args.output_dir)

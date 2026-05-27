@@ -111,4 +111,11 @@ def main(csv_path, output_dir='.'):
 
 
 if __name__ == '__main__':
-    main('air_quality_general_stations_2017.csv')
+    import argparse
+    parser = argparse.ArgumentParser(description='Score air-pollution monitoring stations')
+    parser.add_argument('--data', default='air_quality_general_stations_2017.csv',
+                        help='Path to monitoring-station CSV')
+    parser.add_argument('--output-dir', default='.',
+                        help='Directory for output files')
+    args = parser.parse_args()
+    main(args.data, args.output_dir)

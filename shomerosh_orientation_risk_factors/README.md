@@ -8,7 +8,7 @@ Code accompanying the manuscript:
 
 ## Overview
 
-This repository contains the data-processing pipeline and statistical analysis code used in the study. We examined associations between 14 modifiable risk factors identified by the Lancet Commission (2024) and orientation performance measured via the Clara/Shomerosh mobile platform in a large sample of cognitively unimpaired community-dwelling adults.
+This repository contains the data-processing pipeline and statistical analysis code used in the study. We examined associations between 14 modifiable risk factors identified by the Lancet Commission (2024) and orientation performance measured via the Clara mobile platform in a large sample of cognitively unimpaired community-dwelling adults.
 
 ## Repository Structure
 
@@ -21,18 +21,85 @@ analysis/
     risk_factor_definitions.py    Binary risk-factor coding (13 Lancet factors + air pollution)
     propensity_score_analysis.py  Overlap-weighted doubly robust regression
     air_pollution_scoring.py      Comprehensive Pollution Index (CPI) from monitoring-station data
+
+requirements.txt              Python dependencies
 ```
+
+## Installation
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running the Pipeline
+
+The pipeline has three sequential stages. Each script accepts `--help` for full argument documentation.
+
+### Step 1: Preprocess raw data
+
+Reads the raw Excel export from the Clara platform and produces a merged per-participant dataset.
+
+```bash
+cd preprocessing/
+python preprocessing.py --input /path/to/ShomeroshTables.xlsx --output-dir .
+```
+
+**Input:** `ShomeroshTables.xlsx` (Clients, Games, Medical sheets)
+**Output:** `merged_data.pkl`
+
+### Step 2: Compute Efficacy Scores
+
+Clips response times to [0.3, 12] seconds, computes ES = success_rate / response_time per game session, and retains only the first session per participant per game type.
+
+```bash
+cd preprocessing/
+python efficacy_scoring.py --input merged_data.pkl --output-dir .
+```
+
+**Input:** `merged_data.pkl` (from Step 1)
+**Output:** `merged_df_ES.pkl`, `merged_df_ES.csv`
+
+### Step 3a: Air pollution scoring (optional)
+
+Scores Israeli monitoring stations using a Comprehensive Pollution Index (CPI) based on WHO Air Quality Guidelines (2021). This step is only needed if air pollution is included as a risk factor.
+
+```bash
+cd analysis/
+python air_pollution_scoring.py --data /path/to/air_quality_general_stations_2017.csv --output-dir .
+```
+
+**Input:** Monitoring-station CSV with annual pollutant concentrations
+**Output:** `station_scores.csv`, `area_pollution_summary.csv`
+
+### Step 3b: Propensity score analysis
+
+Runs the overlap-weighted doubly robust regression for all 14 risk factors × 7 cognitive measures.
+
+```bash
+cd analysis/
+python propensity_score_analysis.py \
+    --data ../preprocessing/merged_df_ES.csv \
+    --output-dir results/
+```
+
+To include air pollution as a risk factor, add:
+```bash
+    --air-pollution-dir /path/to/dir/with/city_area_mapping.csv
+```
+
+**Input:** `merged_df_ES.csv` (from Step 2), optionally `city_area_mapping.csv`
+**Output:** `results/propensity_results.csv` — one row per risk factor × cognitive measure, with columns for both approaches (A: PS as covariate; B: overlap weights)
 
 ## Methods
 
 ### 1. Preprocessing
 
-Participants were recruited through the Clara mobile app (locally adapted as *Shomerosh*; www.shomerosh.com). Raw data from the app export (Clients, Games, Medical sheets) was processed as follows:
+Participants were recruited through the Clara mobile app. Raw data from the app export (Clients, Games, Medical sheets) was processed as follows:
 
 1. **Account filtering** — test/developer accounts removed; ages restricted to 18–100.
 2. **Medical questionnaire** — responses pivoted to one row per participant; gender-specific columns merged; BMI computed from validated height and weight; extreme sleep-hours values clipped.
 3. **Efficacy Scores** — for each game session, ES = mean(success rate) / mean(response time). Response times were clipped to 0.3–12 seconds. Only the first session per participant per game type (Places, Events, People, Lexical) was retained.
-4. **Exclusions** — participants missing age or sex were excluded, as these are required for the propensity score model (final analysis sample: N ≈ 2,908).
+4. **Exclusions** — participants missing age or sex were excluded, as these are required for the propensity score model.
 
 ### 2. Risk Factor Definitions
 
@@ -61,12 +128,6 @@ This procedure was repeated for all 14 risk factors × 7 cognitive measures (4 i
 ## Data Availability
 
 Data is not made publicly available for participants' privacy reasons and may be available for scientific research upon request, following verification.
-
-## Requirements
-
-```
-pip install -r requirements.txt
-```
 
 ## References
 

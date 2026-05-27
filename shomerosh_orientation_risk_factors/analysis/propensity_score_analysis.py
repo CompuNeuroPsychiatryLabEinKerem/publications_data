@@ -22,6 +22,7 @@ Reference:
 """
 
 import os
+import sys
 import pandas as pd
 import numpy as np
 import statsmodels.formula.api as smf
@@ -29,6 +30,7 @@ from scipy import stats
 import warnings
 warnings.filterwarnings('ignore')
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from risk_factor_definitions import RiskFactorDefinitions
 
 ES_MEASURES = [
@@ -71,18 +73,17 @@ def _add_air_pollution(df, csv_path, air_dir):
         if not os.path.exists(mapping_path):
             return
         raw = pd.read_csv(csv_path, low_memory=False)
+        if 'cityName' not in raw.columns:
+            return
         city_info = raw.groupby('userID')['cityName'].first().reset_index()
         if 'cityName' in df.columns:
             df.drop(columns=['cityName'], inplace=True)
-        df_merged = df.merge(city_info, on='userID', how='left')
+        df_tmp = df[['userID']].merge(city_info, on='userID', how='left')
         cm = pd.read_csv(mapping_path)
-        df_merged['air_pollution_CPI'] = df_merged['cityName'].map(
-            dict(zip(cm['city'], cm['CPI_mean'])))
-        df_merged['air_pollution_very_high_risk'] = (
-            df_merged['air_pollution_CPI'] > 2.0).astype(float)
-        df_merged.loc[df_merged['air_pollution_CPI'].isna(),
-                      'air_pollution_very_high_risk'] = np.nan
-        df.update(df_merged)
+        cpi_map = dict(zip(cm['city'], cm['CPI_mean']))
+        df['air_pollution_CPI'] = df_tmp['cityName'].map(cpi_map).values
+        df['air_pollution_very_high_risk'] = (df['air_pollution_CPI'] > 2.0).astype(float)
+        df.loc[df['air_pollution_CPI'].isna(), 'air_pollution_very_high_risk'] = np.nan
     except Exception:
         pass
 
@@ -169,5 +170,14 @@ def main(csv_path, air_pollution_dir=None, output_dir='.'):
 
 
 if __name__ == '__main__':
-    DATA = '../preprocessing/merged_df_ES.csv'
-    main(DATA, output_dir='results')
+    import argparse
+    parser = argparse.ArgumentParser(
+        description='Overlap-weighted doubly robust propensity-score analysis')
+    parser.add_argument('--data', default='../preprocessing/merged_df_ES.csv',
+                        help='Path to merged_df_ES.csv (from efficacy_scoring.py)')
+    parser.add_argument('--air-pollution-dir', default=None,
+                        help='Directory with city_area_mapping.csv (optional)')
+    parser.add_argument('--output-dir', default='results',
+                        help='Directory for output files')
+    args = parser.parse_args()
+    main(args.data, args.air_pollution_dir, args.output_dir)

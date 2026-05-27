@@ -8,7 +8,7 @@ Code accompanying the manuscript:
 
 ## Overview
 
-This repository contains the data-processing pipeline and statistical analysis code used in the study. We examined associations between 14 modifiable risk factors identified by the Lancet Commission (2024) and orientation performance measured via the Clara mobile platform in a large sample of cognitively unimpaired community-dwelling adults.
+Preprocessing and analysis code for the study. We tested whether modifiable risk factors for Alzheimer's disease (per the 2024 Lancet Commission) are associated with orientation performance in cognitively unimpaired adults assessed via the Clara mobile platform.
 
 ## Repository Structure
 
@@ -33,11 +33,11 @@ pip install -r requirements.txt
 
 ## Running the Pipeline
 
-The pipeline has three sequential stages. Each script accepts `--help` for full argument documentation.
+Three stages, run in order. All scripts accept `--help`.
 
 ### Step 1: Preprocess raw data
 
-Reads the raw Excel export from the Clara platform and produces a merged per-participant dataset.
+Reads the raw Excel export and merges clients, games, and medical questionnaire data.
 
 ```bash
 cd preprocessing/
@@ -61,7 +61,7 @@ python efficacy_scoring.py --input merged_data.pkl --output-dir .
 
 ### Step 3a: Air pollution scoring (optional)
 
-Scores Israeli monitoring stations using a Comprehensive Pollution Index (CPI) based on WHO Air Quality Guidelines (2021). This step is only needed if air pollution is included as a risk factor.
+Scores Israeli monitoring stations using a Comprehensive Pollution Index (CPI) normalised to WHO 2021 guidelines. Only needed if air pollution is used as a risk factor.
 
 ```bash
 cd analysis/
@@ -73,7 +73,7 @@ python air_pollution_scoring.py --data /path/to/air_quality_general_stations_201
 
 ### Step 3b: Propensity score analysis
 
-Runs the overlap-weighted doubly robust regression for all 14 risk factors × 7 cognitive measures.
+Runs overlap-weighted doubly robust regression for all risk factors × cognitive measures.
 
 ```bash
 cd analysis/
@@ -88,46 +88,46 @@ To include air pollution as a risk factor, add:
 ```
 
 **Input:** `merged_df_ES.csv` (from Step 2), optionally `city_area_mapping.csv`
-**Output:** `results/propensity_results.csv` — one row per risk factor × cognitive measure, with columns for both approaches (A: PS as covariate; B: overlap weights)
+**Output:** `results/propensity_results.csv` — one row per risk factor × measure, columns for both approaches
 
 ## Methods
 
 ### 1. Preprocessing
 
-Participants were recruited through the Clara mobile app. Raw data from the app export (Clients, Games, Medical sheets) was processed as follows:
+Raw data exported from the Clara app (Clients, Games, Medical sheets):
 
-1. **Account filtering** — test/developer accounts removed; ages restricted to 18–100.
-2. **Medical questionnaire** — responses pivoted to one row per participant; gender-specific columns merged; BMI computed from validated height and weight; extreme sleep-hours values clipped.
-3. **Efficacy Scores** — for each game session, ES = mean(success rate) / mean(response time). Response times were clipped to 0.3–12 seconds. Only the first session per participant per game type (Places, Events, People, Lexical) was retained.
-4. **Exclusions** — participants missing age or sex were excluded, as these are required for the propensity score model.
+1. **Account filtering** — removed test accounts; kept ages 18–100.
+2. **Medical questionnaire** — pivoted to one row per participant; merged gender-specific columns; computed BMI; clipped extreme sleep-hours values.
+3. **Efficacy Scores** — ES = mean(success rate) / mean(response time) per game session. Response times clipped to 0.3–12 s. Kept only the first session per participant per game type.
+4. **Exclusions** — dropped participants missing age or sex (needed for propensity model).
 
 ### 2. Risk Factor Definitions
 
-Thirteen binary risk factors were created from self-reported medical and lifestyle questionnaire data following Lancet Commission (2024) definitions:
+Thirteen binary risk factors from self-reported questionnaire data, following the Lancet Commission (2024):
 
 | Category | Risk Factors |
 |---|---|
 | **Non-vascular** | Low education (≤ 12 yrs), hearing loss, depression, anxiety, sleep disorders, physical inactivity, social isolation, excessive alcohol |
 | **Vascular** | Hypertension, diabetes, high cholesterol, smoking (AHE), obesity (BMI ≥ 30) |
 
-Air pollution exposure was derived from a Comprehensive Pollution Index (CPI) based on Israeli monitoring-station data, normalised against WHO Air Quality Guidelines (2021). Participants were assigned the CPI of their self-reported city of residence; CPI > 2.0 was classified as very high exposure.
+Air pollution was scored using a Comprehensive Pollution Index (CPI) from Israeli monitoring stations normalised to WHO 2021 guidelines, mapped to participants by city of residence. CPI > 2.0 = very high exposure.
 
 ### 3. Statistical Analysis
 
-Associations between each risk factor and orientation performance were estimated using **overlap-weighted doubly robust regression**:
+We used **overlap-weighted doubly robust regression**:
 
-1. A **propensity score** PS = P(Exposure | Age, Age², Sex, Age × Sex) was estimated via logistic regression.
-2. **Overlap weights** were computed: w = (1 − PS) for exposed, w = PS for unexposed participants.
-3. Two nested **weighted least-squares** models were compared:
+1. Propensity score: PS = P(Exposure | Age, Age², Sex, Age × Sex) via logistic regression.
+2. Overlap weights: w = (1 − PS) for exposed, w = PS for unexposed.
+3. Compared nested WLS models:
    - Null:  Score ~ Age + Age² + Sex + Age × Sex
    - Full:  Score ~ Exposure + Age + Age² + Sex + Age × Sex
-4. The incremental variance explained (ΔR²) was used as the effect-size measure.
+4. Effect size = incremental variance explained (ΔR²).
 
-This procedure was repeated for all 14 risk factors × 7 cognitive measures (4 individual domains + 3 composite scores). Spatiotemporal orientation (mean of Places and Events) was the primary outcome.
+Repeated for all risk factors × 7 cognitive measures (4 individual ES domains + 3 composites). Primary outcome: spatiotemporal orientation (mean of Places and Events).
 
 ## Data Availability
 
-Data is not made publicly available for participants' privacy reasons and may be available for scientific research upon request, following verification.
+Data is not publicly available for privacy reasons but may be shared for research purposes upon request.
 
 ## References
 

@@ -13,8 +13,8 @@ are implemented:
       Weight = PS         for unexposed participants
       Score ~ Exposure + Age + Age² + Sex + Age × Sex   [WLS]
 
-The primary outcome is the incremental variance explained (ΔR²)
-attributable to the risk factor after adjusting for demographics.
+Effect size: incremental variance explained (ΔR²) after
+adjusting for demographics.
 
 Reference:
   Li, Morgan & Zaslavsky (2018).  Balancing covariates via propensity

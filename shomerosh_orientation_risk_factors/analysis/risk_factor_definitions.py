@@ -1,10 +1,8 @@
 """
-Binary risk-factor definitions based on the 2024 Lancet Commission
-on dementia prevention, intervention, and care.
+Binary risk-factor definitions per the 2024 Lancet Commission.
 
-Loads the analysis-ready CSV (merged_df_ES.csv), aggregates to one row
-per participant, applies a medical-data availability filter, and creates
-13 binary risk-factor columns plus an air-pollution variable.
+Loads merged_df_ES.csv, aggregates to one row per participant,
+and creates 13 binary risk-factor columns.
 
 Risk factors and their definitions
 -----------------------------------

@@ -1,10 +1,9 @@
 """
 Comprehensive Pollution Index (CPI) scoring.
 
-Normalises annual-average pollutant concentrations from Israeli monitoring
-stations against WHO Air Quality Guidelines (2021) and computes a weighted
-Comprehensive Pollution Index (CPI).  Weights reflect health-impact relevance
-to dementia risk as recommended by the 2024 Lancet Commission.
+Normalises pollutant concentrations from Israeli monitoring stations
+against WHO Air Quality Guidelines (2021).  Pollutant weights follow
+the 2024 Lancet Commission.
 
 Pollutant weights:
     PM2.5  2.0   (primary dementia risk factor)
